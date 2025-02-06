@@ -6,18 +6,16 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
-class ResetPassword extends Command
+class ResetPasswordCommand extends Command
 {
-    protected $signature = 'reset:password {--for=}';
+    protected $signature = 'reset:password {--for=} {--new_password=}';
 
     protected $description = 'Reset Password to Default 12345';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): void
     {
         $email = $this->option('for');
+        $newPassword = $this->option('new_password');
 
         $this->newLine();
         $this->info("Email: {$email}.");
@@ -28,21 +26,27 @@ class ResetPassword extends Command
             return;
         }
 
+        if (!$newPassword) {
+            $newPassword = '12345678';
+        }
+
         if (app()->isProduction()) {
             $this->info('The application is in Production.');
             if ($this->confirm('Do you wish to continue?')) {
-                $user->password = Hash::make('12345');
+                $user->password = Hash::make($newPassword);
                 $user->save();
 
-                $this->info("Password Reset Successful for {$user->name}.");
+                $this->info("Password Reset Successful for {$user->screen_name}.");
             } else {
                 $this->info('Password Reset Cancelled.');
             }
         } else {
-            $user->password = Hash::make('12345678');
+            $user->password = Hash::make($newPassword);
             $user->save();
 
-            $this->info("Password Reset Successful for {$user->name}.");
+            $this->info("Password Reset Successful for {$user->screen_name}.");
+            $this->newLine();
         }
     }
+
 }
